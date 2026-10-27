@@ -33,17 +33,49 @@ stays, prune the Project, and re-import only the keepers.
 
 ---
 
+## Filesystem convention
+
+All context lifecycle files live under `docs/context/` in the project repo:
+
+```
+docs/context/
+  exports/                    ← withLinda raw exports, one per cleanup run
+    2026-10-27.json
+  review.json                 ← lindakit review output
+  keepers.json                ← commit this — record of what's in context
+  archive/                    ← lindakit archive output
+    handoffs/
+    design/
+    changedocs/
+    tests/
+    config/
+    misc/
+```
+
+Add this to your repo's `.gitignore` to exclude ephemeral working files:
+
+```
+# context lifecycle working files
+docs/context/exports/
+docs/context/review.json
+```
+
+`keepers.json` is worth committing — it's a record of what was in context
+at the time of the last cleanup.
+
+---
+
 ## Step 1 — Export
 
 Navigate to your Claude Project page and run the **withLinda** bookmarklet.
-Save the downloaded JSON as `export.json`.
+Save the downloaded JSON as `docs/context/exports/YYYY-MM-DD.json`.
 
 ---
 
 ## Step 2 — Summarize (optional)
 
 ```bash
-lindakit export export.json
+lindakit export docs/context/exports/2026-10-27.json
 ```
 
 Prints a table of all docs with their auto-detected type (handoff, design,
@@ -55,7 +87,7 @@ what's in the Project before you start deciding.
 ## Step 3 — Review
 
 ```bash
-lindakit review export.json
+lindakit review docs/context/exports/2026-10-27.json -o docs/context/review.json
 ```
 
 Interactive prompt for each doc:
@@ -72,8 +104,8 @@ Decision (k/a/d/s/q): k
 → keep
 ```
 
-Decisions are saved to `review.json` after each entry. You can quit and
-resume — already-decided docs are skipped on resume.
+Decisions are saved to `docs/context/review.json` after each entry. You
+can quit and resume — already-decided docs are skipped on resume.
 
 **Decision keys:**
 - `k` — keep (will go into keepers.json for re-import)
@@ -94,24 +126,24 @@ resume — already-decided docs are skipped on resume.
 ## Step 4 — Generate keepers.json
 
 ```bash
-lindakit keepers review.json
+lindakit keepers docs/context/review.json -o docs/context/keepers.json
 ```
 
-Writes `keepers.json` — a JSON array of `{ file_name, content }` objects
-for every doc marked `keep`. This is the file Linda Import reads.
+Writes `docs/context/keepers.json` — a JSON array of `{ file_name, content }`
+objects for every doc marked `keep`. This is the file Linda Import reads.
 
 ---
 
 ## Step 5 — Organize archive files (optional)
 
 ```bash
-lindakit archive review.json --output-dir archive/
+lindakit archive docs/context/review.json -d docs/context/archive/
 ```
 
 Writes archived docs as `.md` files into typed subfolders:
 
 ```
-archive/
+docs/context/archive/
   handoffs/        ← stale handoff docs
   design/          ← DESIGN_* and *_design docs
   changedocs/      ← changedoc_*, change_doc_*, etc.
@@ -130,13 +162,14 @@ commit them to git, and remove them from the Project.
 Navigate to your Claude Project page and click **Linda Prune**.
 
 This deletes all current docs from the Project. There is no undo —
-run it only after you have `keepers.json` ready.
+run it only after you have `docs/context/keepers.json` ready.
 
 ---
 
 ## Step 7 — Import keepers
 
-Click **Linda Import** on the Project page, then select your `keepers.json`.
+Click **Linda Import** on the Project page, then select
+`docs/context/keepers.json`.
 
 The bookmarklet will POST each keeper doc to the Project API and show
 progress. When it's done, your Project has exactly the docs you chose.
@@ -145,8 +178,9 @@ progress. When it's done, your Project has exactly the docs you chose.
 
 ## Step 8 — Clean the repo
 
-For design docs you archived: move them from `archive/design/` to your
-repo's `docs/roadmap/` (or wherever they belong) and commit.
+For design docs you archived: move them from `docs/context/archive/design/`
+to your repo's `docs/roadmap/` (or wherever they belong) and commit.
+Commit `docs/context/keepers.json` as a record of the cleanup.
 
 The repo is the right home for design docs — they're version-controlled,
 linkable, and fetchable in future Claude sessions. The Project context
@@ -159,9 +193,9 @@ window is for active references only.
 **Linda Refresh** combines Prune + Import in one bookmarklet. Use it when
 you've already done the review and just want to reset the context:
 
-1. Generate `keepers.json`
+1. Generate `docs/context/keepers.json`
 2. Click Linda Refresh
-3. Select `keepers.json`
+3. Select `docs/context/keepers.json`
 4. Done
 
 ---

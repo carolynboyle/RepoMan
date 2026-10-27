@@ -28,7 +28,7 @@ pip install -e lindakit/
 Summarize an export file from withLinda.
 
 ```bash
-lindakit export export.json
+lindakit export docs/context/exports/2026-10-27.json
 ```
 
 Prints a table showing each doc's filename, auto-detected type, word count,
@@ -51,8 +51,7 @@ and any flags (e.g. "stale" for handoffs from before the current month).
 Interactively review each doc. Default output: `review.json`.
 
 ```bash
-lindakit review export.json
-lindakit review export.json -o my-review.json
+lindakit review docs/context/exports/2026-10-27.json -o docs/context/review.json
 ```
 
 For each doc, shows:
@@ -77,8 +76,7 @@ through a large export in multiple sessions.
 Generate `keepers.json` for Linda Import. Default output: `keepers.json`.
 
 ```bash
-lindakit keepers review.json
-lindakit keepers review.json -o keepers-2026-10.json
+lindakit keepers docs/context/review.json -o docs/context/keepers.json
 ```
 
 Reads the review file and writes a JSON array of every doc marked `keep`:
@@ -100,14 +98,13 @@ Project gets exactly these docs.
 Organize archived docs into typed subfolders. Default output: `./archive`.
 
 ```bash
-lindakit archive review.json
-lindakit archive review.json -d /path/to/my-archive
+lindakit archive docs/context/review.json -d docs/context/archive/
 ```
 
 Writes each doc marked `archive` as a `.md` file into a typed subfolder:
 
 ```
-archive/
+docs/context/archive/
   handoffs/
   design/
   changedocs/
