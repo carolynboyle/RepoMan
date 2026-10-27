@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "lindakit"
+version = "0.1.0"
+description = "CLI tools for Claude project context lifecycle management"
+readme = "../README.md"
+license = { text = "AGPL-3.0-or-later" }
+authors = [{ name = "Carolyn Boyle" }]
+requires-python = ">=3.10"
+
+dependencies = [
+    "click>=8.0",
+    "rich>=13.0",
+]
+
+[project.scripts]
+lindakit = "lindakit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["lindakit*"]
