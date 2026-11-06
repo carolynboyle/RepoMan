@@ -1,7 +1,24 @@
 # RepoMan
 
-**Claude project context lifecycle tools** — prune, curate, and re-import
-the docs that live in a claude.ai Project's context window.
+**Tools and conventions for organizing repos** — how they are laid out on
+every machine, the rules Claude follows in them, and the tooling that
+prunes, curates and re-imports the docs in a claude.ai Project's context
+window.
+
+## Docs
+
+| Doc | What it covers |
+|---|---|
+| `docs/machine-setup.md` | Where repos live on every machine (`~/projects/`) and the new-machine checklist |
+| `docs/rules/` | Shared rules for Claude, used across repos (`project_rules.md`, `github_rules.md`) |
+| `docs/workflow.md` | The Claude Project context cleanup workflow, with flowchart |
+| `docs/naming-conventions.md` | How to name context docs so they sort themselves |
+| `docs/lindakit.md` | Installing and using the `lindakit` CLI |
+| `docs/roadmap.md` | What is built and what is planned |
+
+---
+
+## The context lifecycle tools
 
 Over time, a Claude project accumulates hundreds of context docs. Most of
 them are stale handoffs, superseded designs, or one-time notes that cost

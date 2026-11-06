@@ -79,7 +79,7 @@ Notes:
 
 **Status:** the `@~/` import setup is designed but has not been tested on
 a real machine. Test on one machine and then a second before relying on it.
-The shared files are not yet in `RepoMan/docs/rules/`.
+The shared files are in `RepoMan/docs/rules/`; the claude.ai Project copies are the same text.
 
 ---
 
