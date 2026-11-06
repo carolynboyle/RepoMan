@@ -103,6 +103,21 @@ Nothing is ever dropped for lack of a prefix. `lindakit rename` (planned)
 will propose prefixed names for existing docs as a dry run, apply them with
 `git mv`, and write an old-name to new-name map to commit alongside.
 
+When it builds a new name it also:
+
+- **Drops a repeated leading type word.** `substack-las-palmas-summary.md`
+  becomes `substack__las-palmas-summary.md`, not
+  `substack__substack-las-palmas-summary.md`. Only a leading match is
+  removed. If dropping it would make two names collide, both keep the full
+  name and the dry run flags it.
+- **Converts short dates to ISO.** `sept21` becomes `2026-09-21`, with the
+  year taken from the doc's `created_at` in the export.
+- **Records the old name.** `review.json` keeps it as `original_name`, and
+  `rename-map.json` lists every old-name to new-name pair.
+
+The first real run of this was done by hand on the seanchaí context
+(commit `fd7d163` in that repo); `lindakit rename` should reproduce it.
+
 ---
 
 ## Notes for Claude
