@@ -4,6 +4,43 @@ Features and integrations planned but not yet built.
 
 ---
 
+## lindakit and the context workflow
+
+The workflow in `docs/workflow.md` is the target. This section tracks what
+is still needed to get there.
+
+### Planned
+
+- [ ] `lindakit export` writes `review.json` with default decisions from the
+      type rules, so review is optional
+- [ ] `lindakit archive` writes every doc, merges duplicates, and flattens
+      `/` in names
+- [ ] Load `docs/context/lindakit.yaml` with the three-layer resolution
+      (built-in defaults, repo yaml, human decisions)
+- [ ] Sort by `<type>__<name>` prefix with no yaml entry
+- [ ] `lindakit rename`: dry run by default, apply with `git mv`, write an
+      old-name to new-name map
+- [ ] Routes: copy archived docs of a type to a repo destination
+- [ ] Restore: build a `keepers.json`-shaped list from chosen archive files
+- [ ] Tests and a clean Pylint run (required by `project_rules.md`)
+
+### Known bugs (found 2026-11-06 reading the 2026-10-27 scaffold)
+
+- `lindakit/pyproject.toml`: `build-backend = "setuptools.backends.legacy:build"`
+  is not a real backend (the module does not exist), so
+  `pip install -e lindakit/` should fail. It should be
+  `setuptools.build_meta`.
+- `archive.py` writes `dest_dir / name` without flattening, so a name such as
+  `claude/foo.md` creates a nested folder.
+- `review.py` finds existing decisions by `file_name`, so two docs with the
+  same name collide: the second is treated as already decided.
+- `cli.py`: the `archive` argument is named `EXPORT_JSON`, but the organizer
+  reads decisions from a review file. The docs pass `review.json`, which is
+  what works.
+- No `tests/` directory.
+
+---
+
 ## Curator integration — Repo Man role
 
 The bookmarklets and `lindakit` CLI are standalone tools that work outside

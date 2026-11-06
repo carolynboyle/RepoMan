@@ -1,210 +1,202 @@
 # RepoMan Workflow
 
-A complete walkthrough of the context cleanup process, from bloated Project
-to clean, curated context window.
+A complete walkthrough of the context cleanup process, from a bloated
+Project to a lean, curated context window. Nothing is lost along the way:
+every doc is archived and committed before anything is deleted.
 
 ---
 
 ## The problem
 
-Claude Projects accumulate docs over time. Every handoff, design note,
-and scratch file from months of work sits in the context window, consuming
-tokens in every session. Most of it is obsolete.
+Claude Projects accumulate docs over time. Every handoff, design note and
+scratch file from months of work sits in the context window and costs tokens
+in every session. Most of it is obsolete.
 
-The solution is periodic context review: export everything, decide what
-stays, prune the Project, and re-import only the keepers.
+The fix is a periodic cleanup: export everything, archive everything,
+decide what stays, prune the Project, and re-import only the keepers.
 
 ---
 
-## Prerequisites
+## The flow
 
-1. **withLinda's exporter bookmarklet** — the starting point for this
-   whole workflow. Install it from:
-   https://github.com/withLinda/claude-project-knowledge-exporter
+```mermaid
+flowchart TD
+    start([Start]) --> export[/Export docs<br/>withLinda bookmarklet/]
+    export --> summarize[Summarize<br/>writes review.json defaults]
+    summarize --> ok{Defaults OK?}
+    ok -- no --> review[lindakit review<br/>flip keep flags]
+    review --> archive
+    ok -- yes --> archive[Archive everything<br/>typed folders, routes copy]
+    archive --> keepers[Write keepers.json<br/>docs marked keep]
+    keepers --> commit[Commit and push<br/>export, archive, keepers]
+    commit --> gh{On GitHub?}
+    gh -- no --> commit
+    gh -- yes --> prune[Linda Prune<br/>deletes all, no undo]
+    prune --> import[Linda Import<br/>loads keepers.json]
+    import --> wrap[Wrap up<br/>log the run]
+    wrap --> done([Done])
+```
 
-2. **lindakit** (optional, for the review step) — install with:
-   ```
-   pip install -e lindakit/
-   ```
-   Or use any other method to decide which docs to keep.
+Two ideas drive the shape:
 
-3. **Linda bookmarklets** — install from `bookmarklets/`. See
-   `bookmarklets/README.md` for setup.
+- **Review is optional.** Summarize always produces a `review.json` with a
+  default decision for every doc, so the whole pipeline can run with no human
+  input. Review is just a chance to edit those defaults.
+- **Everything is archived first.** Prune deletes every doc from the Project
+  anyway, so the only real decision is which docs come back. A doc is either a
+  keeper or archive-only. There is no "delete" outcome, because nothing is
+  thrown away.
+
+---
+
+## Status: what works today
+
+The flow above is the target. Not every step is built.
+
+| Step | Tool | Status |
+|---|---|---|
+| Export | withLinda bookmarklet | external, works |
+| Summarize | `lindakit export` | prints a summary; does **not** yet write `review.json` |
+| Review | `lindakit review` | implemented; interactive, resumable |
+| Archive everything | `lindakit archive` | partial: writes only docs marked archive, no dedupe, no filename flattening |
+| Keepers | `lindakit keepers` | implemented |
+| Commit and push | git, by hand | manual |
+| Prune | Linda Prune bookmarklet | implemented |
+| Import | Linda Import bookmarklet | implemented |
+| Wrap up | by hand | manual; routes are planned |
+
+Planned work and known bugs are tracked in `docs/roadmap.md`. Until the
+planned pieces exist, do the missing steps by hand: run `lindakit review`
+to produce `review.json`, then archive and commit the raw export alongside it
+(see below), which makes the manual path equally safe.
 
 ---
 
 ## Filesystem convention
 
-All context lifecycle files live under `docs/context/` in the project repo:
+All context lifecycle files live under `docs/context/` in the project repo.
+Commit all of it.
 
 ```
 docs/context/
-  exports/                    ← withLinda raw exports, one per cleanup run
-    2026-10-27.json
-  review.json                 ← lindakit review output
-  keepers.json                ← commit this — record of what's in context
-  archive/                    ← lindakit archive output
+  lindakit.yaml        per-repo settings (types, defaults, routes)
+  review.json          decisions: auto-generated defaults, editable
+  keepers.json         what gets re-imported
+  exports/             raw withLinda exports, one per run
+    2026-11-06.json
+  archive/             every doc from the export, keepers too
     handoffs/
     design/
-    changedocs/
-    tests/
-    config/
-    misc/
+    reference/
+    research/
+    ...                one folder per doc type
 ```
 
-Add this to your repo's `.gitignore` to exclude ephemeral working files:
+Why commit everything: the raw export is the lossless record. It carries each
+doc's `uuid` and `created_at`, which the archived `.md` files do not. Archive
+files are the readable, sorted view. Disk is cheap and a lost doc is not.
 
-```
-# context lifecycle working files
-docs/context/exports/
-docs/context/review.json
-```
-
-`keepers.json` is worth committing — it's a record of what was in context
-at the time of the last cleanup.
+Docs are sorted into `archive/<type>/` by their name prefix; see
+`docs/naming-conventions.md`.
 
 ---
 
-## Step 1 — Export
+## Step 1: Export
 
-Navigate to your Claude Project page and run the **withLinda** bookmarklet.
-Save the downloaded JSON as `docs/context/exports/YYYY-MM-DD.json`.
+On your Claude Project page, run the **withLinda** bookmarklet. Save the
+downloaded JSON as `docs/context/exports/YYYY-MM-DD.json`.
 
----
-
-## Step 2 — Summarize (optional)
+## Step 2: Summarize
 
 ```bash
-lindakit export docs/context/exports/2026-10-27.json
+lindakit export docs/context/exports/2026-11-06.json
 ```
 
-Prints a table of all docs with their auto-detected type (handoff, design,
-config/ref, etc.) and flags stale handoffs. Gives you a quick picture of
-what's in the Project before you start deciding.
+Prints each doc's name, detected type, size and flags (stale handoff,
+duplicate). Once the planned change lands, this step also writes
+`docs/context/review.json`, giving each doc a default decision from the
+type rules in `lindakit.yaml`:
 
----
+- reference and recent handoff docs default to **keep**
+- everything else defaults to **archive**
+- nothing defaults to delete
 
-## Step 3 — Review
+Docs with identical content (after stripping a `claude/` name prefix) are
+treated as one.
+
+## Step 3: Review (optional)
 
 ```bash
-lindakit review docs/context/exports/2026-10-27.json -o docs/context/review.json
+lindakit review docs/context/exports/2026-11-06.json -o docs/context/review.json
 ```
 
-Interactive prompt for each doc:
+Walks each doc and asks keep, archive, delete or skip. Decisions are saved
+after every answer, so you can quit and resume. A human decision always
+overrides the default.
 
-```
-╭─ 1/47 ───────────────────────────────────────────────╮
-│ seanchai_register_handoff_2026-10-22.md               │
-│ handoff · 1,240 words                                 │
-│                                                       │
-│ # Seanchai Register — Handoff 2026-10-22 ...          │
-╰───────────────────────────────────────────────────────╯
-
-Decision (k/a/d/s/q): k
-→ keep
-```
-
-Decisions are saved to `docs/context/review.json` after each entry. You
-can quit and resume — already-decided docs are skipped on resume.
-
-**Decision keys:**
-- `k` — keep (will go into keepers.json for re-import)
-- `a` — archive (will be written to organized subfolders by `lindakit archive`)
-- `d` — delete (excluded from everything)
-- `s` — skip (decide later; re-reviewing will prompt again)
-- `q` — quit and save progress
-
-**General heuristics:**
-- **Keep** — evergreen references (project rules, SQL conventions, active
-  handoffs from the current month)
-- **Archive** — design docs (→ repo `docs/` or `roadmap/`), stale handoffs
-  (pre-current-month), completed changedocs
-- **Delete** — true scratch files, duplicates, empty or near-empty docs
-
----
-
-## Step 4 — Generate keepers.json
-
-```bash
-lindakit keepers docs/context/review.json -o docs/context/keepers.json
-```
-
-Writes `docs/context/keepers.json` — a JSON array of `{ file_name, content }`
-objects for every doc marked `keep`. This is the file Linda Import reads.
-
----
-
-## Step 5 — Organize archive files (optional)
+## Step 4: Archive everything
 
 ```bash
 lindakit archive docs/context/review.json -d docs/context/archive/
 ```
 
-Writes archived docs as `.md` files into typed subfolders:
+Writes every doc into `archive/<type>/`, keepers included, so the repo holds
+a complete copy of the Project. Archived docs of a routed type are also copied
+to their destination in the repo (for example design docs to `docs/roadmap/`).
+Routing copies; it never moves.
 
+## Step 5: Write keepers.json
+
+```bash
+lindakit keepers docs/context/review.json -o docs/context/keepers.json
 ```
-docs/context/archive/
-  handoffs/        ← stale handoff docs
-  design/          ← DESIGN_* and *_design docs
-  changedocs/      ← changedoc_*, change_doc_*, etc.
-  tests/           ← test_* docs
-  config/          ← config, rules, conventions docs
-  misc/            ← everything else
-```
 
-From here you can move design docs into your repo's `docs/roadmap/`,
-commit them to git, and remove them from the Project.
+Writes the JSON array of docs marked keep. This is the file Linda Import
+reads.
 
----
+## Step 6: Commit and push
 
-## Step 6 — Prune the Project
+Commit the raw export, `review.json`, `keepers.json`, `lindakit.yaml` and the
+archive, then push. **Confirm the commit is on GitHub before going on.** Prune
+is the one step that cannot be undone, and this is the gate in front of it.
 
-Navigate to your Claude Project page and click **Linda Prune**.
+## Step 7: Prune
 
-This deletes all current docs from the Project. There is no undo —
-run it only after you have `docs/context/keepers.json` ready.
+On the Project page, click **Linda Prune**. It deletes every doc in the
+Project. There is no undo, which is why step 6 comes first.
 
----
+## Step 8: Import
 
-## Step 7 — Import keepers
+Click **Linda Import** and select `docs/context/keepers.json`. The Project now
+holds exactly the docs you chose.
 
-Click **Linda Import** on the Project page, then select
-`docs/context/keepers.json`.
+## Step 9: Wrap up
 
-The bookmarklet will POST each keeper doc to the Project API and show
-progress. When it's done, your Project has exactly the docs you chose.
+Record the run (see `docs/seanchai-cleanup-run.md` for the format). Check that
+any routed copies, such as design docs under `docs/roadmap/`, are committed.
 
 ---
 
-## Step 8 — Clean the repo
+## Restoring an archived doc
 
-For design docs you archived: move them from `docs/context/archive/design/`
-to your repo's `docs/roadmap/` (or wherever they belong) and commit.
-Commit `docs/context/keepers.json` as a record of the cleanup.
-
-The repo is the right home for design docs — they're version-controlled,
-linkable, and fetchable in future Claude sessions. The Project context
-window is for active references only.
+Archived files keep their prefixed names, so restoring one is a copy: put the
+file in a `keepers.json`-shaped list and run Linda Import. It returns to the
+Project already named correctly.
 
 ---
 
-## Shortcuts
+## Shortcut
 
-**Linda Refresh** combines Prune + Import in one bookmarklet. Use it when
-you've already done the review and just want to reset the context:
-
-1. Generate `docs/context/keepers.json`
-2. Click Linda Refresh
-3. Select `docs/context/keepers.json`
-4. Done
+**Linda Refresh** combines Prune and Import in one bookmarklet. Use it when
+the archive is committed and pushed and `keepers.json` is ready.
 
 ---
 
 ## Suggested cadence
 
-- **Monthly** — review and trim. Anything older than a month that isn't an
-  evergreen reference probably doesn't need to be in context.
-- **After a major feature** — once a changedoc is shipped, it goes to
-  archive, not context.
-- **When context feels bloated** — `lindakit export` will show you the
-  token footprint immediately.
+- **Monthly**: anything older than a month that is not an evergreen reference
+  probably does not need to be in context.
+- **After a major feature**: once a changedoc has shipped, it goes to the
+  archive, not the context.
+- **When context feels bloated**: `lindakit export` shows the footprint
+  immediately.

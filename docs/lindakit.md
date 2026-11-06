@@ -142,3 +142,23 @@ The review JSON is a plain array of doc entries with an added `decision` field:
 You can edit this file by hand if you prefer. `lindakit review` reads
 existing decisions and resumes from where the first `skip` or un-decided
 entry appears.
+
+---
+
+## Planned changes
+
+This reference describes the commands as they behave today. These changes are
+designed but not yet built; see `docs/roadmap.md` for the full list and
+`docs/workflow.md` for how they fit the workflow.
+
+- **`lindakit export` writes `review.json`** with a default decision for every
+  doc, so review becomes optional.
+- **`lindakit archive` archives every doc**, not just those marked archive,
+  and merges duplicates (same content after stripping a `claude/` prefix).
+- **`lindakit.yaml`** in `docs/context/`: per-repo doc types, default
+  decisions and routes. It replaces the type patterns hard-coded in
+  `export.py`.
+- **Prefix sorting**: a doc named `<type>__<name>.md` sorts into
+  `archive/<type>/` with no yaml entry. See `docs/naming-conventions.md`.
+- **`lindakit rename`**: dry-run by default, proposes prefixed names for
+  existing docs and writes an old-name to new-name map.

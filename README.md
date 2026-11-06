@@ -48,12 +48,19 @@ lindakit keepers       # generate keepers.json from your review decisions
 ## Workflow overview
 
 1. **Export** current Project docs with the [withLinda bookmarklet](https://github.com/withLinda/claude-project-knowledge-exporter)
-2. **Review** with `lindakit review` — mark each doc keep / archive / delete
-3. **Generate** `keepers.json` with `lindakit keepers`
-4. **Prune** the Project with the Linda Prune bookmarklet
-5. **Import** your keepers with the Linda Import bookmarklet
+2. **Summarize** with `lindakit export` (will also write `review.json` with default decisions)
+3. **Review** (optional) with `lindakit review` to edit those defaults
+4. **Archive everything** with `lindakit archive`, sorted into typed folders
+5. **Write** `keepers.json` with `lindakit keepers`
+6. **Commit and push** the export, archive and keepers, and confirm they are on GitHub
+7. **Prune** the Project with the Linda Prune bookmarklet
+8. **Import** your keepers with the Linda Import bookmarklet
 
-Full walkthrough: `docs/workflow.md`
+Nothing is lost: everything is archived and committed before anything is deleted.
+
+Full walkthrough and a flowchart: `docs/workflow.md`
+How to name docs so they sort themselves: `docs/naming-conventions.md`
+What is built and what is planned: `docs/roadmap.md`
 
 ---
 
