@@ -22,6 +22,8 @@ is still needed to get there.
       old-name to new-name map
 - [ ] Routes: copy archived docs of a type to a repo destination
 - [ ] Restore: build a `keepers.json`-shaped list from chosen archive files
+- [ ] `rules` type: kept, routed to `.claude/rules/` (see
+  `naming-conventions.md`); shared rules in `~/.claude/rules/`
 - [ ] Tests and a clean Pylint run (required by `project_rules.md`)
 
 ### Fixed bugs (2026-11-06)
