@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RepoMan bookmarklets</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  .bm { display: block; margin: 1.25rem 0 0.25rem; }
+  a.bookmarklet { display: inline-block; padding: 0.4rem 0.9rem; border-radius: 6px; background: #1a1a2e; color: #fff; text-decoration: none; font-weight: 600; }
+  a.bookmarklet.destructive { background: #8a1c1c; }
+  .desc { margin: 0.25rem 0 0 0.25rem; color: #444; }
+  .warn { color: #8a1c1c; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>RepoMan bookmarklets</h1>
+<p>Drag each button onto your browser's bookmarks bar. If the bar is hidden,
+show it first (Chrome and Edge: Ctrl+Shift+B, or Cmd+Shift+B on a Mac).
+Do not click the buttons on this page; they only work from inside a
+Claude Project page.</p>
+{{LINKS}}
+<h2>Using them</h2>
+<ol>
+  <li>Open a page inside your Claude Project (the address contains <code>/project/</code>).</li>
+  <li>Click the bookmark. A small progress box appears in the top right.</li>
+</ol>
+<p class="warn">Prune and Refresh delete every doc in the Project. Export with
+withLinda and commit the export before using them.</p>
+<p>This page is generated from the <code>.js</code> files next to it by
+<code>build_install.py</code>. Edit those, not this page.</p>
+</body>
+</html>

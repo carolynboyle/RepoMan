@@ -18,13 +18,20 @@ to Linda Import.
 
 ---
 
-## Installing a bookmarklet
+## Installing the bookmarklets
 
-1. Open your browser's bookmarks toolbar (show it if hidden)
-2. Create a new bookmark
-3. Paste the contents of the `.js` file as the URL (the whole thing,
-   starting with `javascript:`)
-4. Name it whatever you like
+1. Open `bookmarklets/install.html` in your browser (double-click it).
+2. Show the bookmarks bar if it is hidden (Ctrl+Shift+B, or Cmd+Shift+B
+   on a Mac).
+3. Drag each button onto the bar.
+
+Do not paste the `.js` files into a bookmark by hand. Browsers flatten a
+pasted URL onto one line, which turns the first `//` comment into the end
+of the program.
+
+`install.html` is generated. After editing a `.js` file or
+`bookmarklets.json`, rebuild it with `python3 build_install.py` (standard
+library only, no virtual environment needed) and commit the result.
 
 ---
 

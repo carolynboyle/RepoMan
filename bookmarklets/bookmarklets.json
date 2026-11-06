@@ -1,0 +1,20 @@
+[
+  {
+    "file": "linda-prune.js",
+    "label": "Linda Prune",
+    "description": "Deletes every doc from the Claude Project you are viewing.",
+    "destructive": true
+  },
+  {
+    "file": "linda-import.js",
+    "label": "Linda Import",
+    "description": "Imports the docs in a keepers.json file into the Project you are viewing.",
+    "destructive": false
+  },
+  {
+    "file": "linda-refresh.js",
+    "label": "Linda Refresh",
+    "description": "Prune and Import in one step. Deletes every doc first.",
+    "destructive": true
+  }
+]
