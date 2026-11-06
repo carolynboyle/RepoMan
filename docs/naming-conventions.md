@@ -73,7 +73,9 @@ yaml only decides what happens to it.
 
 `lindakit` resolves a doc's type in this order:
 
-1. A known prefix before `__`.
+1. Any prefix before `__`. A type listed in `lindakit.yaml` adds a default
+   decision and route; an unlisted prefix still gets its own folder and the
+   built-in default (archive).
 2. A regex match from the `types:` list in `lindakit.yaml` (this is how
    older, unprefixed names still sort).
 3. Otherwise `misc`.
