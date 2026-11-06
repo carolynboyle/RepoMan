@@ -94,3 +94,10 @@ def test_real_bookmarklets_are_valid_javascript(tmp_path):
         result = subprocess.run(["node", "--check", str(js)],
                                 capture_output=True, text=True, check=False)
         assert result.returncode == 0, f"{entry['file']}: {result.stderr}"
+
+
+@pytest.mark.parametrize("name", ["linda-prune.js", "linda-refresh.js"])
+def test_nothing_is_deleted_before_a_confirmation(name):
+    code = (REAL_DIR / name).read_text(encoding="utf-8")
+    assert "confirm(" in code
+    assert code.index("confirm(") < code.index("'DELETE'")

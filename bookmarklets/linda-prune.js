@@ -70,6 +70,19 @@ javascript:(async () => {
       return;
     }
 
+    // --- Confirm before anything is deleted ---
+    const shown = docs.slice(0, 8).map(d => d.file_name).join('\n');
+    const more = docs.length > 8 ? `\n…and ${docs.length - 8} more` : '';
+    const ok = confirm(
+      `Delete ${docs.length} doc(s) from this Project?\n\n${shown}${more}` +
+      '\n\nThis cannot be undone.'
+    );
+    if (!ok) {
+      status().textContent = 'Cancelled. Nothing was deleted.';
+      setTimeout(() => overlay.remove(), 3000);
+      return;
+    }
+
     status().textContent = `Found ${docs.length} doc(s). Deleting…`;
 
     let deleted = 0, failed = 0;
