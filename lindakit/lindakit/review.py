@@ -60,9 +60,19 @@ class ReviewSession:
         else:
             self.decisions = []
 
-    def _find_existing(self, file_name: str) -> dict | None:
+    @staticmethod
+    def _key(entry: dict) -> str:
+        """Identify a doc by uuid, falling back to file name when it has none.
+
+        Two docs can share a file name (duplicates, or a name stored with and
+        without a prefix), so the name alone cannot tell them apart.
+        """
+        return entry.get('uuid') or entry.get('file_name', '')
+
+    def _find_existing(self, doc: dict) -> dict | None:
+        key = self._key(doc)
         for d in self.decisions:
-            if d.get('file_name') == file_name:
+            if self._key(d) == key:
                 return d
         return None
 
@@ -91,7 +101,7 @@ class ReviewSession:
             stale = self.summary.is_stale_handoff(doc, current_month)
 
             # Skip already-decided docs (non-skip decisions)
-            existing = self._find_existing(name)
+            existing = self._find_existing(doc)
             if existing and existing.get('decision') not in (None, 'skip'):
                 console.print(
                     f"[dim][{i}/{total}] {name} → already {existing['decision']}[/dim]"

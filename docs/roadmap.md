@@ -24,20 +24,25 @@ is still needed to get there.
 - [ ] Restore: build a `keepers.json`-shaped list from chosen archive files
 - [ ] Tests and a clean Pylint run (required by `project_rules.md`)
 
-### Known bugs (found 2026-11-06 reading the 2026-10-27 scaffold)
+### Fixed bugs (2026-11-06)
 
-- `lindakit/pyproject.toml`: `build-backend = "setuptools.backends.legacy:build"`
-  is not a real backend (the module does not exist), so
-  `pip install -e lindakit/` should fail. It should be
-  `setuptools.build_meta`.
-- `archive.py` writes `dest_dir / name` without flattening, so a name such as
-  `claude/foo.md` creates a nested folder.
-- `review.py` finds existing decisions by `file_name`, so two docs with the
-  same name collide: the second is treated as already decided.
-- `cli.py`: the `archive` argument is named `EXPORT_JSON`, but the organizer
-  reads decisions from a review file. The docs pass `review.json`, which is
-  what works.
-- No `tests/` directory.
+Found reading the 2026-10-27 scaffold, fixed with tests in `lindakit/tests/`:
+
+- [x] `pyproject.toml` used a backend that does not exist; now
+  `setuptools.build_meta`. The `readme` path pointed outside the project
+  root and was removed. `pytest` and `pylint` added as `dev` extras.
+- [x] `archive` wrote `claude/foo.md` into a nested folder (crash). Names are
+  now flattened to a single file name.
+- [x] Two docs with the same name overwrote each other in the archive. The
+  second is now written as `name-<uuid8>.ext`; an identical copy is skipped.
+- [x] `review` keyed decisions by `file_name`, so the second same-named doc
+  was never asked about. It now keys on `uuid`.
+- [x] `archive` help showed `EXPORT_JSON`; it is now `REVIEW_JSON`.
+- [x] Added a `tests/` directory (33 tests).
+
+Verification caveat: the tests were run against a stand-in for `rich`
+(no network in the build sandbox), and Pylint has not been run. Run
+`pytest` and `pylint lindakit` on a machine with the real packages.
 
 ---
 

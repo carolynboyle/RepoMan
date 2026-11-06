@@ -9,7 +9,7 @@ Usage:
     lindakit export   [EXPORT_JSON]   — summarize an export file
     lindakit review   [EXPORT_JSON]   — interactive keep/archive/delete review
     lindakit keepers  [REVIEW_JSON]   — generate keepers.json from review
-    lindakit archive  [EXPORT_JSON]   — organize archive files into subfolders
+    lindakit archive  [REVIEW_JSON]   — organize archive files into subfolders
 """
 
 import click
@@ -60,14 +60,14 @@ def keepers(review_json: str, output: str):
 
 
 @main.command()
-@click.argument("export_json", default="export.json", metavar="EXPORT_JSON")
+@click.argument("review_json", default="review.json", metavar="REVIEW_JSON")
 @click.option(
     "--output-dir", "-d",
     default="archive",
     help="Directory to write organized archive files [default: ./archive]"
 )
-def archive(export_json: str, output_dir: str):
-    """Organize archived docs into subfolders by type."""
+def archive(review_json: str, output_dir: str):
+    """Organize docs marked archive in a review file into subfolders by type."""
     from lindakit.archive import ArchiveOrganizer
-    organizer = ArchiveOrganizer(export_json, output_dir)
+    organizer = ArchiveOrganizer(review_json, output_dir)
     organizer.organize()
