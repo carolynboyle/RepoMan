@@ -1,0 +1,5 @@
+docs/context/exports/
+docs/context/review.json
+
+# Claude Code — prevents credentials in approved commands from being committed
+.claude/*.local.json
